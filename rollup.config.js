@@ -6,7 +6,7 @@ import dts from "rollup-plugin-dts";
 import image from '@rollup/plugin-image';
 import { terser } from "rollup-plugin-terser";
 
-import packageJson from "./package.json" assert { type: "json" };
+const packageJson = require('./package.json');
 
 export default [
   {

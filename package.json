@@ -1,13 +1,9 @@
 {
-  "name": "@brightspeed-techm/component-governance",
+  "name": "@Sanghshree/react-component-library-sample",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/Brightspeed-TechM"
+    "registry": "https://npm.pkg.github.com/Sanghshree"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Brightspeed-TechM/component-governance.git"
-  },
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "A simple template for a custom React component library",
   "scripts": {
     "clean": "rimraf dist",

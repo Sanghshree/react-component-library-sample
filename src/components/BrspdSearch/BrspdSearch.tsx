@@ -17,7 +17,7 @@ import InputAdornment from '@mui/material/InputAdornment';;
 import { Button } from '@mui/material';
 
 
-export interface SearchdProps {
+export interface SearchProps {
   label?: string;
   error?: boolean;
   isRequired?: boolean;
@@ -27,7 +27,7 @@ export interface SearchdProps {
   handleChange?: () => void;
 }
 
-const BrspdSearch = ({ label, error, inputType = 'Text', isRequired = false, errorMessage, isTooltip = false, ...props }: InputFieldProps) => {
+const BrspdSearch = ({ label, error, isRequired = false, errorMessage, isTooltip = false, ...props }:SearchProps) => {
 
   const [showPassword, setShowPassword] = React.useState(false);
 
