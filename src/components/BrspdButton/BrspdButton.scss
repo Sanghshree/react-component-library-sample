@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins');
+:root {
+  --ltn__primary-color: #FA4628;
+  --ltn__primary-color-2: #FFC800;
+  --ltn__primary-color-3: #FA783C;
+  --BS__Bright-yellow-25: #fff1bf;
+
+  /* header */
+  --BS__Strong-Black-100: #000000;
+  --BS__Reliable-Gray-100: #e6e7e8;
+  --ltn__heading-color-2: #222222;
+  --BS__Reliable-Gray-75: #f1f1f1;
+
+  --ltn__white-color: #ffffff;
+}
+
+.button--primary {
+  color: var(--BS__Strong-Black-100);
+  background-color: var(--ltn__primary-color-2);
+  border: 0;
+}
+.button--primary:disabled{
+  color: #4d4d4d;
+  background-color: var( --BS__Bright-yellow-25);
+  border: 0;
+}
+
+.button--secondary:disabled{
+  border: solid 2px var(--BS__Reliable-Gray-100);
+}
+
+.button--tertiary:disabled{
+  color: #4d4d4d;
+  background-color: var(--BS__Reliable-Gray-75) !important;
+  border: 0;
+}
+
+.button--secondary {
+  border: 2px solid var(--BS__Strong-Black-100);
+  background-color: transparent;
+}
+
+.button--tertiary{
+  border: 0;
+  background-color: var(--BS__Reliable-Gray-100);
+}
+.button--primary:hover,
+.button--primary:active,
+.button--tertiary:hover,
+.button--tertiary:active,
+.button--secondary:hover,
+.button--secondary:active {
+  &:not([disabled]) {
+    border: 0;
+    background-color: var(--BS__Strong-Black-100);
+    color: #ffffff;
+  }
+}
+.button--default {
+  font-family: Poppins;
+  font-weight: bold;
+  width: 240px;
+  height: 50px;
+  border-radius: 26px;
+  font-size: 16px;
+}
+.button--fullwidth{
+  font-family: Poppins;
+  font-weight: bold;
+  font-size: 16px;
+  width: 343px;
+  height: 50px;
+  border-radius: 26px;
+}
+

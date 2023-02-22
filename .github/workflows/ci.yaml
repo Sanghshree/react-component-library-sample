@@ -1,0 +1,147 @@
+name: 'EW cg Self Service Portal UI Release Pipeline'
+
+on:
+  pull_request:
+    types: 
+      - closed
+    branches:
+      - development 
+
+env:
+  APP_NAME: ew-cg
+  CI_TOOLING: ${{ secrets.REGISTRY_URL }}/bts-tooling:latest
+  CHART_NAME: ${{ secrets.REGISTRY }}/bts-chart
+
+jobs: 
+  release_version:
+    if: github.event.pull_request.merged == true
+    runs-on: [self-hosted,ewportal]
+    container:
+      image: btseusdevacr.azurecr.io/bts-tooling:latest
+      credentials:
+        username: ${{ secrets.AZURE_DOCKER_USER }}
+        password: ${{ secrets.AZURE_DOCKER_PASSWORD }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Login Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Generate Image Tag
+        run: |
+            git fetch origin --tags --force --quiet
+            git tag -l --sort=-v:refname | head -n 1 | awk -F. '{print $1"."$2"."(++$3)}' > version.txt
+            RELEASE_VERSION=`cat version.txt`
+            git tag --force latest
+            git tag --force ${RELEASE_VERSION}
+            git push origin --force --tags
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: version.txt
+
+  build_and_test:
+    if: github.event.pull_request.merged == true
+    needs: release_version
+    runs-on: [self-hosted,ewportal]
+    container:
+      image: btseusdevacr.azurecr.io/bts-tooling:latest
+      credentials:
+        username: ${{ secrets.AZURE_DOCKER_USER }}
+        password: ${{ secrets.AZURE_DOCKER_PASSWORD }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Login Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+      - name: Build image
+        run: |
+          IMAGE_TAG=`cat artifact/version.txt`
+          echo ${IMAGE_TAG}
+          docker build -t ${{ secrets.REGISTRY_URL }}/${APP_NAME}:${IMAGE_TAG} . 
+          az acr login -n ${{ secrets.REGISTRY }}
+          docker push ${{ secrets.REGISTRY_URL }}/${APP_NAME}:${IMAGE_TAG} 
+  develop_deploy:
+    if: github.event.pull_request.merged == true
+    needs: build_and_test
+    runs-on: [self-hosted,ewportal]
+    container:
+      image: btseusdevacr.azurecr.io/bts-tooling:latest
+      credentials:
+        username: ${{ secrets.AZURE_DOCKER_USER }}
+        password: ${{ secrets.AZURE_DOCKER_PASSWORD }}
+    env:
+     ENV_NAME: dev
+     NAMESPACE: ew-develop
+     CLUSTER_NAME: bts-eus-dev-aks
+     RG_NAME: bts-az-eus-dev-aks-rg
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Login Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+      - name: Login Azure Registry
+        run: |
+          export HELM_EXPERIMENTAL_OCI=1
+          helm registry login ${{ secrets.REGISTRY_URL }} --username ${{ secrets.AZURE_DOCKER_USER}} --password ${{ secrets.AZURE_DOCKER_PASSWORD}}
+          az acr login -n ${{ secrets.REGISTRY }}
+          az acr helm repo add -n ${{ secrets.REGISTRY }}
+          helm repo update
+          helm repo list
+          helm search repo bts-chart
+      - name: Login to DEV Cluster
+        run: |
+          export RELEASE_VERSION=`cat artifact/version.txt`
+          az aks get-credentials --resource-group ${RG_NAME} --name ${CLUSTER_NAME}
+          helm search repo list
+          helm upgrade --install ${APP_NAME}-${ENV_NAME} ${CHART_NAME} --values .ci/values/${ENV_NAME}.yaml --set  image.tag=${RELEASE_VERSION} --namespace ${NAMESPACE} --create-namespace
+
+##   uat_deploy:
+#     if: github.event.pull_request.merged == true
+#     needs: build_and_test
+#     runs-on: self-hosted
+#     container:
+#       image: btseusdevacr.azurecr.io/bts-tooling:latest
+#       credentials:
+#         username: ${{ secrets.AZURE_DOCKER_USER }}
+#         password: ${{ secrets.AZURE_DOCKER_PASSWORD }}
+#     env:
+#      ENV_NAME: uat
+#      NAMESPACE: ew-uat
+#      CLUSTER_NAME: bts-eus-uat-aks
+#      RG_NAME: bts-az-eus-uat-aks-rg
+#     steps:
+#       - name: Check out repository
+#         uses: actions/checkout@v2
+#       - name: Login Azure
+#         uses: azure/login@v1
+#         with:
+#           creds: ${{ secrets.AZURE_CREDENTIALS }}
+#       - name: Download Artifact
+#         uses: actions/download-artifact@v3
+#       - name: Login Azure Registry
+#         run: |
+#           export HELM_EXPERIMENTAL_OCI=1
+#           helm registry login ${{ secrets.REGISTRY_URL }} --username ${{ secrets.AZURE_DOCKER_USER}} --password ${{ secrets.AZURE_DOCKER_PASSWORD}}
+#           az acr login -n ${{ secrets.REGISTRY }}
+#           az acr helm repo add -n ${{ secrets.REGISTRY }}
+#           helm repo update
+#           helm repo list
+#           helm search repo bts-chart
+#       - name: Login to uat Cluster
+#         run: |
+#           export RELEASE_VERSION=`cat artifact/version.txt`
+#           az aks get-credentials --resource-group ${RG_NAME} --name ${CLUSTER_NAME}
+#           helm search repo list
+#           helm upgrade --install ${APP_NAME}-${ENV_NAME} ${CHART_NAME} --values .ci/values/${ENV_NAME}.yaml --set image.tag=${RELEASE_VERSION} --namespace ${NAMESPACE} --create-namespace

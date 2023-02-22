@@ -1,0 +1,29 @@
+
+@import url('https://fonts.googleapis.com/css?family=Poppins');
+:root {
+  --ltn__primary-color: #FA4628;
+  --ltn__primary-color-2: #FFC800;
+  --ltn__primary-color-3: #FA783C;
+  --BS__Bright-yellow-25: #fff1bf;
+
+  /* header */
+  --BS__Strong-Black-100: #000000;
+  --BS__Reliable-Gray-100: #e6e7e8;
+  --ltn__heading-color-2: #222222;
+  --BS__Reliable-Gray-75: #f1f1f1;
+
+  --ltn__white-color: #ffffff;
+}
+
+.tab-panel-box {
+
+    padding: 0.5rem;
+    margin: 0.8rem;
+    background-color: white;
+  }
+
+.tab-panel-tab {
+    padding: 0.5rem;
+    margin: 0.8rem;
+    background-color: var(--ltn__primary-color-2);
+  }

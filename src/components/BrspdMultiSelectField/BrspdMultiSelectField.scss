@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins');
+
+.img-info-small {
+  font-size: 18px;
+  height: 18px;
+  margin-top: 16px;
+  margin-left: 8px;
+  filter: invert(65%) sepia(90%) saturate(4029%) hue-rotate(179deg) brightness(103%) contrast(98%);
+}
+.input-label  {
+  //width: 80px;
+  height: 24px;
+  margin: 0 5px 5px 0;
+  font-family: Inter;
+  font-size: 16px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: normal;
+  color: var(--BS__Strong-Black-100) !important;
+
+}
+
+.error-text {
+  color: #d11e00 !important; 
+}
+.error-span {
+  display: flex ;
+  margin-top:14 ;
+}
+
+.multiselect-box {
+box-shadow: none;
+border-width: 1px solid #000000;
+}
